@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+file="${1}"
+device="${2}"
+
+if [ -z "${device}" ]
+then
+    echo "Usage:"
+	echo -e "\t${0} <file> <device>"
+
+    exit 1
+fi
+
+if ! [ -f "${file}" ]
+then
+    echo "File '${file}' doesn't exist."
+    exit 1
+fi
+
+if ! [[ "${device}" =~ ^sd[a-z]$ ]]
+then
+    echo "Wrong device name"
+    exit 1
+fi
+
+id_bus="$( udevadm info --name="${device}" \
+    | grep "ID_BUS" \
+    | cut -d " " -f 2 \
+    | cut -d "=" -f 2 )"
+
+if [ "${id_bus}" != "usb" ]
+then
+    echo "'${device}' is not a USB device."
+    exit 1
+fi
+
+file_size="$( ls -l --block-size=M "${file}" \
+    | cut -d " " -f 5 )"
+
+dd if="${file}" 2> /dev/null \
+    | pv --size "${file_size}" \
+    | sudo dd of="/dev/${device}" bs=4M
+sync
