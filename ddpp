@@ -30,7 +30,7 @@ id_bus="$( udevadm info --name="${device}" \
 
 if [ "${id_bus}" != "usb" ]
 then
-    echo "'${device}' is not a USB device."
+    echo "'${device}' is not an USB device."
     exit 1
 fi
 
